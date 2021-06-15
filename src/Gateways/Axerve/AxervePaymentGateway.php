@@ -10,14 +10,15 @@ use AtlasByte\Gateways\PaymentLink;
 class AxervePaymentGateway extends AbstractPaymentGateway
 {
 
+    const SANDBOX_URI = "https://sandbox.gestpay.net/api";
+    const PRODUCTION_URI = "https://ecomms2s.sella.it/api";
+
     protected array $candidateConfiguration = [
-        'key' => ''
+        'key' => '',
+        'version' => 'v1',
+        'sandbox' => false
     ];
 
-    /**
-     * Axerve authentication uses apikey. It should be sent in the Authorization header
-     * This method
-     */
     public function authenticate(): void
     {
     }
