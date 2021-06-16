@@ -2,7 +2,7 @@
 
 namespace AtlasByte\Gateways\PonePay;
 
-use AtlasByte\Common\PaymentRequest;
+use AtlasByte\Common\Http\PaymentRequest;
 use AtlasByte\Contracts\IPaymentLink;
 use AtlasByte\Contracts\IPaymentOutcome;
 use AtlasByte\Gateways\AbstractPaymentGateway;

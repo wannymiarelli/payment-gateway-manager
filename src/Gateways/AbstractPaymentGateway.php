@@ -2,10 +2,13 @@
 
 namespace AtlasByte\Gateways;
 
+use AtlasByte\Common\Http\HttpClient;
 use AtlasByte\Contracts\IPaymentGateway;
 use AtlasByte\Exceptions\InvalidConfigurationException;
 
 abstract class AbstractPaymentGateway implements IPaymentGateway {
+
+    protected HttpClient $httpClient;
 
     /**
      * Structure of the configuration for the gateway, used internally to validate the provided
@@ -24,7 +27,8 @@ abstract class AbstractPaymentGateway implements IPaymentGateway {
      * AbstractPaymentGateway constructor.
      * @throws InvalidConfigurationException
      */
-    public function __construct(array $configuration) {
+    public function __construct(array $configuration, HttpClient $httpClient) {
+        $this->httpClient = $httpClient;
         $this->configuration = $configuration;
         // validate the given configuration
         $this->validateConfiguration();

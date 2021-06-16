@@ -1,1 +1,1 @@
-C:37:"PHPUnit\Runner\DefaultTestResultCache":156:{a:2:{s:7:"defects";a:1:{s:42:"GatewayManagerTest::test_available_gateway";i:4;}s:5:"times";a:1:{s:42:"GatewayManagerTest::test_available_gateway";d:0.008;}}}
+C:37:"PHPUnit\Runner\DefaultTestResultCache":156:{a:2:{s:7:"defects";a:1:{s:42:"GatewayManagerTest::test_available_gateway";i:4;}s:5:"times";a:1:{s:42:"GatewayManagerTest::test_available_gateway";d:0.024;}}}
