@@ -10,6 +10,7 @@ class PaymentRequest
     private string $transactionId;
     private string $currency;
     private float $amount;
+    private string $email;
 
     /**
      * PaymentRequest constructor.
@@ -17,11 +18,12 @@ class PaymentRequest
      * @param string $currency
      * @param float $amount
      */
-    public function __construct(string $transactionId, string $currency, float $amount)
+    public function __construct(string $transactionId, string $currency, float $amount, string $email)
     {
         $this->transactionId = $transactionId;
         $this->currency = $currency;
         $this->amount = $amount;
+        $this->email = $email;
     }
 
     /**
@@ -52,7 +54,12 @@ class PaymentRequest
         return $this->amount;
     }
 
-
-
+    /**
+     * @return string
+     */
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
 
 }

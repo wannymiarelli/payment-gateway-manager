@@ -8,6 +8,7 @@ use AtlasByte\Contracts\IPaymentOutcome;
 use AtlasByte\Exceptions\PaymentGenerationException;
 use AtlasByte\Gateways\AbstractPaymentGateway;
 use AtlasByte\Gateways\Axerve\Dto\AxervePaymentDTO;
+use AtlasByte\Gateways\Axerve\Dto\AxervePaymentMethodDTO;
 use AtlasByte\Gateways\PaymentLink;
 
 class AxervePaymentGateway extends AbstractPaymentGateway
@@ -18,7 +19,6 @@ class AxervePaymentGateway extends AbstractPaymentGateway
 
     protected array $candidateConfiguration = [
         'key' => '',
-        'version' => 'v1',
         'shopLogin' => '',
         'sandbox' => false
     ];
@@ -41,12 +41,52 @@ class AxervePaymentGateway extends AbstractPaymentGateway
             "shopLogin" => $this->getConfiguration()['shopLogin'],
             "amount" => $paymentRequest->getAmount(),
             "currency" => $paymentRequest->getCurrency(),
-            "shopTransactionID" => $paymentRequest->getTransactionId()
+            "shopTransactionID" => $paymentRequest->getTransactionId(),
+            "buyerEmail" => "w.miarelli@besaferate.com",
+            "paymentChannel" => [
+                "channelType" => ['EMAIL', 'QRCODE']
+            ]
         ];
 
-        $this->httpClient->post(SANDBOX_URI);
+        $response = $this->httpClient->post('/v1/payment/create', [
+            'json' => $requestBody,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Authorization' => 'apikey ' . $this->getConfiguration()['key']
+            ]
+        ]);
 
-        return new AxervePaymentDTO();
+        $data = json_decode($response->getBody());
+
+        return new AxervePaymentDTO($data);
+    }
+
+    public function getPaymentMethods (AxervePaymentDTO $axervePaymentDTO) {
+        $response = $this->httpClient->get('/v1/payment/methods/' . $axervePaymentDTO->getPaymentId() . '/1', [
+            'headers' => [
+                'paymentToken' => $axervePaymentDTO->getPaymentToken()
+            ]
+        ]);
+
+        $data = json_decode($response->getBody());
+
+        return new AxervePaymentMethodDTO($data);
+    }
+
+    public function submitPayment (AxervePaymentDTO $axervePaymentDTO) {
+        $response = $this->httpClient->post('/v1/payment/submit', [
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'paymentToken' => $axervePaymentDTO->getPaymentToken(),
+            ],
+            'json' => [
+                'shopLogin' => $this->getConfiguration()['shopLogin']
+            ]
+        ]);
+
+        $data = json_decode($response->getBody());
+
+        return new AxervePaymentMethodDTO($data);
     }
 
     /**
@@ -71,6 +111,9 @@ class AxervePaymentGateway extends AbstractPaymentGateway
             throw new PaymentGenerationException("[AXERVE] - Error generating payment message=" . $payment->getError()->getDescription() . ", code=" . $payment->getError()->getCode());
         }
 
+        $paymentLink = $this->getPaymentMethods($payment);
+
+        var_dump($paymentLink);
     }
 
     public function handlePaymentCallback(array $data): IPaymentOutcome {

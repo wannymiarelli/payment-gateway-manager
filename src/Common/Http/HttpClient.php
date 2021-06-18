@@ -22,7 +22,7 @@ class HttpClient extends AbstractHttpClient
      */
     public function get(string $uri, array $options): \Psr\Http\Message\ResponseInterface
     {
-        return $this->client->get($this->apiUriResolver->resolveUri() . $uri, $options);
+        return $this->client->get($this->apiUriResolver->resolveUri() . $uri, $this->mergeDefaultOptions($options));
     }
 
     /**
@@ -30,7 +30,7 @@ class HttpClient extends AbstractHttpClient
      */
     public function post(string $uri, array $options): \Psr\Http\Message\ResponseInterface
     {
-        return $this->client->post($this->apiUriResolver->resolveUri() . $uri, $options);
+        return $this->client->post($this->apiUriResolver->resolveUri() . $uri, $this->mergeDefaultOptions($options));
     }
 
     /**
@@ -38,7 +38,7 @@ class HttpClient extends AbstractHttpClient
      */
     public function put(string $uri, array $options): \Psr\Http\Message\ResponseInterface
     {
-        return $this->client->put($this->apiUriResolver->resolveUri() . $uri, $options);
+        return $this->client->put($this->apiUriResolver->resolveUri() . $uri, $this->mergeDefaultOptions($options));
     }
 
     /**
@@ -46,12 +46,26 @@ class HttpClient extends AbstractHttpClient
      */
     public function patch(string $uri, array $options): \Psr\Http\Message\ResponseInterface
     {
-        return $this->client->patch($this->apiUriResolver->resolveUri() . $uri, $options);
+        return $this->client->patch($this->apiUriResolver->resolveUri() . $uri, $this->mergeDefaultOptions($options));
     }
 
     public function delete(string $uri, array $options): \Psr\Http\Message\ResponseInterface
     {
-        return $this->client->delete($this->apiUriResolver->resolveUri() . $uri, $options);
+        return $this->client->delete($this->apiUriResolver->resolveUri() . $uri, $this->mergeDefaultOptions($options));
+    }
+
+    /**
+     * Merge the provided options for the single HTTP request with the global options set
+     * in the HTTP client configuration
+     * @param array $options
+     * @return array
+     */
+    private function mergeDefaultOptions (array $options): array
+    {
+        if (isset($options['headers']) && count($this->headers) > 0) {
+            $options['headers'] = array_merge($options['headers'], $this->headers);
+        }
+        return $options;
     }
 
 }

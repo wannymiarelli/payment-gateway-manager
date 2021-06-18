@@ -9,14 +9,21 @@ class GatewayManagerTest extends TestCase
     {
         $manager = new \AtlasByte\Factories\PaymentGatewayFactory();
         $axerve = $manager->getGateway('axerve', [
-            'key' => 'key',
+            'key' => 'R0VTUEFZODY0MTAjI0VzZXJjZW50ZSBUZXN0IGRpIE1pYXJlbGxpIyMwNC8wNi8yMDIxIDE0OjIzOjM5',
             'version' => 'v1',
             'shopLogin' => 'GESPAY86410',
             'sandbox' => true
         ]);
         $this->assertInstanceOf(\AtlasByte\Gateways\Axerve\AxervePaymentGateway::class, $axerve);
         $this->assertNotEquals([], $axerve->getConfiguration());
-        $this->assertEquals('key', $axerve->getConfiguration()['key']);
+        $this->assertEquals('R0VTUEFZODY0MTAjI0VzZXJjZW50ZSBUZXN0IGRpIE1pYXJlbGxpIyMwNC8wNi8yMDIxIDE0OjIzOjM5', $axerve->getConfiguration()['key']);
+
+        $data = $axerve->generatePaymentLink(new \AtlasByte\Common\PaymentRequest(
+            "test123",
+            "EUR",
+            100
+        ));
+        var_dump($data);
     }
 
 }

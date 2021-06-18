@@ -4,10 +4,21 @@
 namespace AtlasByte\Gateways\Axerve\Dto;
 
 
-class AxervePaymentURLDTO
+use AtlasByte\Common\BaseDto;
+
+class AxervePaymentURLDTO extends BaseDto
 {
 
     protected string $href;
+
+    /**
+     * AxervePaymentURLDTO constructor.
+     * @param string $href
+     */
+    public function __construct(string $href)
+    {
+        $this->href = $href;
+    }
 
     /**
      * @return string

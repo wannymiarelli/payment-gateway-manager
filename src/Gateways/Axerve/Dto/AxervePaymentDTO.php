@@ -4,13 +4,32 @@
 namespace AtlasByte\Gateways\Axerve\Dto;
 
 
-class AxervePaymentDTO
+use AtlasByte\Common\BaseDto;
+use JetBrains\PhpStorm\Pure;
+
+class AxervePaymentDTO extends BaseDto
 {
 
-    protected AxerveErrorDTO $error;
-    protected string $paymentToken;
-    protected string $paymentId;
-    protected AxervePaymentURLDTO $userRedirect;
+    private string $paymentToken;
+    private string $paymentId;
+    private AxerveErrorDTO $error;
+    private AxervePaymentURLDTO $userRedirect;
+
+    /**
+     * AxervePaymentDTO constructor.
+     */
+    public function __construct(object $data) {
+        $this->paymentId = $data->payload->paymentID;
+        $this->paymentToken = $data->payload->paymentToken;
+        $this->error = new AxerveErrorDTO(
+            $data->error->code,
+            $data->error->description
+        );
+        if ($data->payload->userRedirect) {
+            $this->userRedirect = new AxervePaymentURLDTO($data->payload->userRedirect->href);
+        }
+    }
+
 
     /**
      * @return AxerveErrorDTO
