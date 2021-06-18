@@ -21,8 +21,10 @@ class GatewayManagerTest extends TestCase
         $data = $axerve->generatePaymentLink(new \AtlasByte\Common\PaymentRequest(
             "test123",
             "EUR",
-            100
+            100,
+            "w.miarelli@besaferate.com"
         ));
+
         var_dump($data);
     }
 

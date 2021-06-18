@@ -14,9 +14,6 @@ use AtlasByte\Gateways\PaymentLink;
 class AxervePaymentGateway extends AbstractPaymentGateway
 {
 
-    const SANDBOX_URI = "https://sandbox.gestpay.net/api";
-    const PRODUCTION_URI = "https://ecomms2s.sella.it/api";
-
     protected array $candidateConfiguration = [
         'key' => '',
         'shopLogin' => '',
@@ -47,6 +44,10 @@ class AxervePaymentGateway extends AbstractPaymentGateway
                 "channelType" => ['EMAIL', 'QRCODE']
             ]
         ];
+
+        if ($paymentRequest->isTokenize()) {
+            $requestBody['requestToken'] = 'MASKEDPAN';
+        }
 
         $response = $this->httpClient->post('/v1/payment/create', [
             'json' => $requestBody,

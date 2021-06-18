@@ -11,6 +11,7 @@ class PaymentRequest
     private string $currency;
     private float $amount;
     private string $email;
+    private bool $tokenize = false;
 
     /**
      * PaymentRequest constructor.
@@ -61,5 +62,24 @@ class PaymentRequest
     {
         return $this->email;
     }
+
+    /**
+     * @return bool
+     */
+    public function isTokenize(): bool
+    {
+        return $this->tokenize;
+    }
+
+    /**
+     * Enable card tokenization, if enable the gateway will return the tokenized card
+     * if the transaction is successful
+     * @param bool $tokenize
+     */
+    public function setTokenize(bool $tokenize): void
+    {
+        $this->tokenize = $tokenize;
+    }
+
 
 }
