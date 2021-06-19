@@ -9,6 +9,7 @@ use AtlasByte\Common\PaymentRequest;
 use AtlasByte\Contracts\IPaymentOutcome;
 use AtlasByte\Exceptions\PaymentGenerationException;
 use AtlasByte\Gateways\AbstractPaymentGateway;
+use AtlasByte\Gateways\Axerve\Dto\AxervePaymentCaptureDTO;
 use AtlasByte\Gateways\Axerve\Dto\AxervePaymentDTO;
 use AtlasByte\Gateways\Axerve\Dto\AxervePaymentMethodDTO;
 use AtlasByte\Gateways\Axerve\Dto\AxervePaymentOutcomeDTO;
@@ -151,7 +152,7 @@ class AxervePaymentGateway extends AbstractPaymentGateway
         );
     }
 
-    public function capturePayment(string $transactionId, float $amount, string $currency)
+    public function capturePayment(string $transactionId, float $amount, string $currency) : IPaymentOutcome
     {
         $requestBody = [
             "shopLogin" => $this->getConfiguration()['shopLogin'],
@@ -167,6 +168,19 @@ class AxervePaymentGateway extends AbstractPaymentGateway
                 'Authorization' => 'apikey ' . $this->getConfiguration()['key']
             ]
         ]);
+
+        $data = new AxervePaymentCaptureDTO(json_decode($response->getBody()));
+
+        $outcome = new PaymentOutcome(
+            $data->errorCode === "0",
+            null,
+            $data->paymentID
+        );
+        $outcome->setBankTransactionId($data->bankTransactionID);
+        $outcome->setTransactionId($data->bankTransactionID);
+        $outcome->setPaymentType($data->transactionType);
+
+        return $outcome;
     }
 
     public function cancelPayment(string $transactionId, float $amount, string $currency, $reason = null)

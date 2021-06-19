@@ -10,7 +10,7 @@ class PaymentRequest
     private string $transactionId;
     private string $currency;
     private float $amount;
-    private string $email;
+    private ?string $email;
     private bool $tokenize = false;
 
     /**
@@ -19,7 +19,7 @@ class PaymentRequest
      * @param string $currency
      * @param float $amount
      */
-    public function __construct(string $transactionId, string $currency, float $amount, string $email)
+    public function __construct(string $transactionId, string $currency, float $amount, ?string $email)
     {
         $this->transactionId = $transactionId;
         $this->currency = $currency;
@@ -56,9 +56,9 @@ class PaymentRequest
     }
 
     /**
-     * @return string
+     * @return ?string
      */
-    public function getEmail(): string
+    public function getEmail(): ?string
     {
         return $this->email;
     }

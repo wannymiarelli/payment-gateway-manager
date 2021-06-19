@@ -40,7 +40,7 @@ interface IPaymentGateway
      * @param string $currency
      * @return mixed
      */
-    public function capturePayment (string $transactionId, float $amount, string $currency);
+    public function capturePayment (string $transactionId, float $amount, string $currency) : IPaymentOutcome;
 
     /**
      * Cancel a previous authorized transaction. It means that the transaction id will no

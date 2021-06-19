@@ -22,11 +22,11 @@ class AxervePaymentCaptureDTO extends BaseDto
         parent::__construct();
         $this->errorCode = $this->readAttribute($data, 'error.code');
         $this->errorDescription = $this->readAttribute($data, 'error.description');
-        $this->transactionType = $this->readAttribute($data, 'transactionType');
-        $this->transactionResult = $this->readAttribute($data, 'transactionResult');
-        $this->bankTransactionID = $this->readAttribute($data, 'bankTransactionID');
-        $this->shopTransactionID = $this->readAttribute($data, 'shopTransactionID');
-        $this->paymentID = $this->readAttribute($data, 'paymentID');
+        $this->transactionType = $this->readAttribute($data, 'payload.transactionType');
+        $this->transactionResult = $this->readAttribute($data, 'payload.transactionResult');
+        $this->bankTransactionID = $this->readAttribute($data, 'payload.bankTransactionID');
+        $this->shopTransactionID = $this->readAttribute($data, 'payload.shopTransactionID');
+        $this->paymentID = $this->readAttribute($data, 'payload.paymentID');
     }
 
 
