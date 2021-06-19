@@ -3,12 +3,15 @@
 namespace AtlasByte\Gateways\Axerve;
 
 use AtlasByte\Common\Http\HttpClient;
+use AtlasByte\Common\Http\PaymentMethod;
+use AtlasByte\Common\PaymentOutcome;
 use AtlasByte\Common\PaymentRequest;
 use AtlasByte\Contracts\IPaymentOutcome;
 use AtlasByte\Exceptions\PaymentGenerationException;
 use AtlasByte\Gateways\AbstractPaymentGateway;
 use AtlasByte\Gateways\Axerve\Dto\AxervePaymentDTO;
 use AtlasByte\Gateways\Axerve\Dto\AxervePaymentMethodDTO;
+use AtlasByte\Gateways\Axerve\Dto\AxervePaymentOutcomeDTO;
 use AtlasByte\Gateways\PaymentLink;
 
 class AxervePaymentGateway extends AbstractPaymentGateway
@@ -25,56 +28,45 @@ class AxervePaymentGateway extends AbstractPaymentGateway
         parent::__construct($configuration, $httpClient);
     }
 
-
     /**
-     * Create a payment via Axerve. The HTTP call returns the payment details along with the unique
-     * payment token that is valid for the next 24h and for a maximum of 10 trials (5 in sandbox)
-     * https://api.gestpay.it/#post-payment-create
-     * @param PaymentRequest $paymentRequest
-     * @return AxervePaymentDTO
+     * Retrieve all the payment methods available for the current payment.
+     * @param AxervePaymentDTO $axervePaymentDTO
+     * @return AxervePaymentMethodDTO
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    private function createPayment (PaymentRequest $paymentRequest) : AxervePaymentDTO {
-        $requestBody = [
-            "shopLogin" => $this->getConfiguration()['shopLogin'],
-            "amount" => $paymentRequest->getAmount(),
-            "currency" => $paymentRequest->getCurrency(),
-            "shopTransactionID" => $paymentRequest->getTransactionId(),
-            "buyerEmail" => "w.miarelli@besaferate.com",
-            "paymentChannel" => [
-                "channelType" => ['EMAIL', 'QRCODE']
-            ]
-        ];
-
-        if ($paymentRequest->isTokenize()) {
-            $requestBody['requestToken'] = 'MASKEDPAN';
-        }
-
-        $response = $this->httpClient->post('/v1/payment/create', [
-            'json' => $requestBody,
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'Authorization' => 'apikey ' . $this->getConfiguration()['key']
-            ]
-        ]);
-
-        $data = json_decode($response->getBody());
-
-        return new AxervePaymentDTO($data);
-    }
-
-    public function getPaymentMethods (AxervePaymentDTO $axervePaymentDTO) {
+    public function getPaymentMethods (AxervePaymentDTO $axervePaymentDTO) : array {
         $response = $this->httpClient->get('/v1/payment/methods/' . $axervePaymentDTO->getPaymentId() . '/1', [
             'headers' => [
                 'paymentToken' => $axervePaymentDTO->getPaymentToken()
             ]
         ]);
 
-        $data = json_decode($response->getBody());
+        $availableMethods = new AxervePaymentMethodDTO(json_decode($response->getBody()));
 
-        return new AxervePaymentMethodDTO($data);
+        $methods = [];
+
+        foreach ($availableMethods as $method) {
+            $paymentMethod = new PaymentMethod(
+                $method->name,
+                $method->logo,
+                $method->paymentType
+            );
+            if (isset($method->userRedirect)) {
+                $paymentMethod->setUserRedirect($method->userRedirect->href);
+            }
+            array_push($methods, $paymentMethod);
+        }
+
+        return $methods;
     }
 
-    public function submitPayment (AxervePaymentDTO $axervePaymentDTO) {
+    /**
+     * Submit the payment to the gateway to obtain authorization
+     * @param AxervePaymentDTO $axervePaymentDTO
+     * @return AxervePaymentMethodDTO
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function submitPayment (AxervePaymentDTO $axervePaymentDTO) : AxervePaymentOutcomeDTO {
         $response = $this->httpClient->post('/v1/payment/submit', [
             'headers' => [
                 'Content-Type' => 'application/json',
@@ -87,7 +79,7 @@ class AxervePaymentGateway extends AbstractPaymentGateway
 
         $data = json_decode($response->getBody());
 
-        return new AxervePaymentMethodDTO($data);
+        return new AxervePaymentOutcomeDTO($data);
     }
 
     /**
@@ -106,6 +98,7 @@ class AxervePaymentGateway extends AbstractPaymentGateway
      * @throws PaymentGenerationException
      */
     public function generatePaymentLink(PaymentRequest $paymentRequest): PaymentLink {
+        // create a new payment token
         $payment = $this->createPayment($paymentRequest);
         // check payment outcome
         if ($payment->getError()->getCode() !== 0) {
@@ -120,4 +113,55 @@ class AxervePaymentGateway extends AbstractPaymentGateway
     public function handlePaymentCallback(array $data): IPaymentOutcome {
     }
 
+    public function authorizePayment(PaymentRequest $paymentRequest) : PaymentOutcome {
+        $requestBody = [
+            "shopLogin" => $this->getConfiguration()['shopLogin'],
+            "amount" => $paymentRequest->getAmount(),
+            "currency" => $paymentRequest->getCurrency(),
+            "shopTransactionID" => $paymentRequest->getTransactionId(),
+        ];
+
+        // if email is there we want the link to be sent by axerve to the customer
+        if ($paymentRequest->getEmail() && $paymentRequest->getEmail() != "") {
+            $requestBody['buyerEmail'] = $paymentRequest->getEmail();
+            $requestBody['paymentChannel'] = [
+                'channelType' => ['EMAIL']
+            ];
+        }
+
+        if ($paymentRequest->isTokenize()) {
+            $requestBody['requestToken'] = 'MASKEDPAN';
+        }
+
+        $response = $this->httpClient->post('/v1/payment/create', [
+            'json' => $requestBody,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Authorization' => 'apikey ' . $this->getConfiguration()['key']
+            ]
+        ]);
+
+        $data = new AxervePaymentDTO(json_decode($response->getBody()));
+
+        return new PaymentOutcome(
+            true,
+            $data->getPaymentToken(),
+            $data->getPaymentId()
+        );
+    }
+
+    public function capturePayment(string $transactionId, float $amount, string $currency)
+    {
+        // TODO: Implement capturePayment() method.
+    }
+
+    public function cancelPayment(string $transactionId, float $amount, string $currency, $reason = null)
+    {
+        // TODO: Implement cancelPayment() method.
+    }
+
+    public function refundPayment(string $transactionId, float $amount)
+    {
+        // TODO: Implement refundPayment() method.
+    }
 }

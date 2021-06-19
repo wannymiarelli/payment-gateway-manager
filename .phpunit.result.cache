@@ -1,1 +1,1 @@
-C:37:"PHPUnit\Runner\DefaultTestResultCache":156:{a:2:{s:7:"defects";a:1:{s:42:"GatewayManagerTest::test_available_gateway";i:4;}s:5:"times";a:1:{s:42:"GatewayManagerTest::test_available_gateway";d:2.955;}}}
+C:37:"PHPUnit\Runner\DefaultTestResultCache":274:{a:2:{s:7:"defects";a:2:{s:42:"GatewayManagerTest::test_available_gateway";i:4;s:45:"AxerveGatewayTest::test_payment_authorization";i:4;}s:5:"times";a:2:{s:42:"GatewayManagerTest::test_available_gateway";d:2.955;s:45:"AxerveGatewayTest::test_payment_authorization";d:3.957;}}}
