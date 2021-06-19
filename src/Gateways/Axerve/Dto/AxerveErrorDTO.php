@@ -9,36 +9,19 @@ use AtlasByte\Common\BaseDto;
 class AxerveErrorDTO extends BaseDto
 {
 
-    protected int $code = 0;
-    protected string $description;
+    public ?string $code = "0";
+    public ?string $description;
 
     /**
      * AxerveErrorDTO constructor.
      * @param int $code
      * @param string $description
      */
-    public function __construct(int $code, string $description)
+    public function __construct($data)
     {
-        $this->code = $code;
-        $this->description = $description;
+        parent::__construct();
+        $this->code = $this->readAttribute($data, 'code');
+        $this->description = $this->readAttribute($data, 'description');
     }
-
-    /**
-     * @return int
-     */
-    public function getCode(): int
-    {
-        return $this->code;
-    }
-
-    /**
-     * @return string
-     */
-    public function getDescription(): string
-    {
-        return $this->description;
-    }
-
-
 
 }

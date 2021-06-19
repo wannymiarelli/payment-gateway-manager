@@ -27,15 +27,17 @@ class AxerveGatewayTest extends TestCase
     public function test_payment_authorization () : void {
         $axerve = $this->getAxerveManager();
         $result = $axerve->authorizePayment(new \AtlasByte\Common\PaymentRequest(
-            "test123",
+            "test123456",
             "EUR",
             100,
-            "w.miarelli@ermeshotels.com"
+            "w.miarelli@besaferate.com"
         ));
         $this->assertNotNull($result);
         $this->assertNotNull($result->getPaymentId());
         $this->assertNotNull($result->getPaymentToken());
     }
+
+    public function test_payment_capture () : void {}
 
     public function test_payment_methods(): void {
         $axerve = $this->getAxerveManager();

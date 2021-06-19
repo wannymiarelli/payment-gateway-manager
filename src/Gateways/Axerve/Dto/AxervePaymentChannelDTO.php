@@ -2,44 +2,25 @@
 
 namespace AtlasByte\Gateways\Axerve\Dto;
 
-class AxervePaymentChannelDTO
+use AtlasByte\Common\BaseDto;
+
+class AxervePaymentChannelDTO extends BaseDto
 {
 
-    private string $name;
-    private string $paymentTpe;
-    private AxervePaymentURLDTO $userRedirect;
+    public ?string $name;
+    public ?string $paymentTpe;
+    public AxervePaymentURLDTO $userRedirect;
 
     /**
      * AxervePaymentChannelDTO constructor.
      */
-    public function __construct(object $data) {
-        $this->name = $data->name;
-        $this->paymentTpe = $data->name;
-        $this->userRedirect = new AxervePaymentURLDTO($data->userRedirect->href);
-    }
-
-    /**
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPaymentTpe(): string
-    {
-        return $this->paymentTpe;
-    }
-
-    /**
-     * @return AxervePaymentURLDTO
-     */
-    public function getUserRedirect(): AxervePaymentURLDTO
-    {
-        return $this->userRedirect;
+    public function __construct($data) {
+        parent::__construct();
+        $this->name = $this->readAttribute($data, 'name');
+        $this->paymentTpe = $this->readAttribute($data, 'paymentType');
+        $this->userRedirect = new AxervePaymentURLDTO(
+            $this->readAttribute($data, 'userRedirect.href')
+        );
     }
 
 }

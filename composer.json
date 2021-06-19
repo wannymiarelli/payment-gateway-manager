@@ -14,7 +14,8 @@
   "require": {
     "php" : "^7.2.5|^8.0",
     "guzzlehttp/guzzle": "^7.0",
-    "php-di/php-di": "^6.3"
+    "php-di/php-di": "^6.3",
+    "symfony/property-access": "^5.3"
   },
   "autoload": {
     "psr-4": {

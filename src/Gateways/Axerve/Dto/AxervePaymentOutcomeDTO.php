@@ -2,38 +2,23 @@
 
 namespace AtlasByte\Gateways\Axerve\Dto;
 
-use AtlasByte\Contracts\IPaymentOutcome;
+use AtlasByte\Common\BaseDto;
 
-class AxervePaymentOutcomeDTO implements IPaymentOutcome
+class AxervePaymentOutcomeDTO extends BaseDto
 {
 
-    private AxerveErrorDTO $error;
-    private AxervePaymentDetailsDTO $payload;
+    public AxerveErrorDTO $error;
+    public AxervePaymentDetailsDTO $payload;
 
     /**
      * AxervePaymentOutcomeDTO constructor.
      */
-    public function __construct(object $data) {
-        if (isset($data['error'])) {
-            $this->error = new AxerveErrorDTO($data->error->code, $data->error->message);
-        }
-        $this->payload = new AxervePaymentDetailsDTO($data->payload);
-    }
-
-    /**
-     * @return AxerveErrorDTO
-     */
-    public function getError(): AxerveErrorDTO
-    {
-        return $this->error;
-    }
-
-    /**
-     * @return AxervePaymentDetailsDTO
-     */
-    public function getPayload(): AxervePaymentDetailsDTO
-    {
-        return $this->payload;
+    public function __construct($data) {
+        parent::__construct();
+        $this->error = new AxerveErrorDTO($this->readAttribute($data, 'error'));
+        $this->payload = new AxervePaymentDetailsDTO(
+            $this->readAttribute($data, 'payload')
+        );
     }
 
 }

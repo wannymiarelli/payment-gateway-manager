@@ -35,9 +35,9 @@ class AxervePaymentGateway extends AbstractPaymentGateway
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getPaymentMethods (AxervePaymentDTO $axervePaymentDTO) : array {
-        $response = $this->httpClient->get('/v1/payment/methods/' . $axervePaymentDTO->getPaymentId() . '/1', [
+        $response = $this->httpClient->get('/v1/payment/methods/' . $axervePaymentDTO->paymentId . '/1', [
             'headers' => [
-                'paymentToken' => $axervePaymentDTO->getPaymentToken()
+                'paymentToken' => $axervePaymentDTO->paymentToken
             ]
         ]);
 
@@ -70,7 +70,7 @@ class AxervePaymentGateway extends AbstractPaymentGateway
         $response = $this->httpClient->post('/v1/payment/submit', [
             'headers' => [
                 'Content-Type' => 'application/json',
-                'paymentToken' => $axervePaymentDTO->getPaymentToken(),
+                'paymentToken' => $axervePaymentDTO->paymentToken,
             ],
             'json' => [
                 'shopLogin' => $this->getConfiguration()['shopLogin']
@@ -96,10 +96,11 @@ class AxervePaymentGateway extends AbstractPaymentGateway
      * Generate a payment link using axerve gateway. It receive a payment request with transaction details
      * and send a request directly to the gateway that will respond with the payment page link
      * @throws PaymentGenerationException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function generatePaymentLink(PaymentRequest $paymentRequest): PaymentLink {
         // create a new payment token
-        $payment = $this->createPayment($paymentRequest);
+        $payment = $this->authorizePayment($paymentRequest);
         // check payment outcome
         if ($payment->getError()->getCode() !== 0) {
             throw new PaymentGenerationException("[AXERVE] - Error generating payment message=" . $payment->getError()->getDescription() . ", code=" . $payment->getError()->getCode());
@@ -145,14 +146,27 @@ class AxervePaymentGateway extends AbstractPaymentGateway
 
         return new PaymentOutcome(
             true,
-            $data->getPaymentToken(),
-            $data->getPaymentId()
+            $data->paymentToken,
+            $data->paymentId
         );
     }
 
     public function capturePayment(string $transactionId, float $amount, string $currency)
     {
-        // TODO: Implement capturePayment() method.
+        $requestBody = [
+            "shopLogin" => $this->getConfiguration()['shopLogin'],
+            "amount" => $amount,
+            "currency" => $currency,
+            "shopTransactionID" => $transactionId,
+        ];
+
+        $response = $this->httpClient->post('/v1/payment/capture', [
+            'json' => $requestBody,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Authorization' => 'apikey ' . $this->getConfiguration()['key']
+            ]
+        ]);
     }
 
     public function cancelPayment(string $transactionId, float $amount, string $currency, $reason = null)
